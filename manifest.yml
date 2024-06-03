@@ -1,0 +1,6 @@
+---
+applications:
+- name: test-pjc-server
+  memory: 1G
+  buildpacks:
+  - https://github.com/alphagov/cf-buildpack-rust
