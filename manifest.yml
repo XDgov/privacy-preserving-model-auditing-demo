@@ -2,5 +2,9 @@
 applications:
 - name: test-pjc-server
   memory: 1.5G
+  disk_quota: 2G 
   buildpacks:
-  - https://github.com/alphagov/cf-buildpack-rust
+  - ((buildpack))
+cc:
+- packages:
+  - max_package_size 2G
