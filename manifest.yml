@@ -2,9 +2,10 @@
 applications:
 - name: test-pjc-server
   memory: 1.5G
-  disk_quota: 2G 
+  disk_quota: 4G 
   buildpacks:
   - ((buildpack))
-cc:
-- packages:
-  - max_package_size 2G
+  properties:
+    cc:
+      packages:
+        max_package_size 4G

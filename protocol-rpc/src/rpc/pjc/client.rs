@@ -9,6 +9,7 @@ use tonic::Request;
 mod rpc_client;
 use crypto::prelude::ByteBuffer;
 use crypto::prelude::TPayload;
+use log::info;
 use protocol::pjc::partner::PartnerPjc;
 use protocol::pjc::traits::*;
 use protocol::shared::LoadData;
@@ -132,12 +133,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     partner_protocol.load_data(input_path);
     partner_protocol.fill_permute_self();
 
+    info!("Sending HE key to company");
     // 3. Send public key for Homomorphic encryption to company
     let req = Request::new(Init {
         public_key: Some(Payload::from(&partner_protocol.get_he_public_key())),
     });
     let init_ack = client_context.key_exchange(req).await?.into_inner();
 
+    info!("Receiving key from company");
     // 4. Receive encrypted keys from company
     let mut u_company_keys = TPayload::new();
     let _ = rpc_client::recv(
@@ -150,6 +153,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     )
     .await?;
 
+    info!("encrypting and permuting");
     // 5. Encrypt company's keys with own keys and permute
     let e_company_keys = partner_protocol.encrypt_permute(u_company_keys);
 
