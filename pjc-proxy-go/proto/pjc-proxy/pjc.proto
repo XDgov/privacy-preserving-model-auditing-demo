@@ -1,0 +1,73 @@
+//  Copyright (c) Facebook, Inc. and its affiliates.
+//  SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+package pjc;
+
+import "google/api/annotations.proto";
+import "google/protobuf/wrappers.proto";
+
+option go_package = "./gen/go/pjc-proxy";
+
+message Payload {
+  repeated bytes payload = 1;
+}
+
+message Init {
+  Payload public_key = 1;
+}
+
+message InitAck {}
+
+message FeatureQuery {
+  uint64 feature_index = 1;
+}
+
+message FeatureAck {
+  FeatureQuery query_ack = 1;
+}
+
+message KeysAck {}
+
+message Commitment {}
+
+message CommitmentAck {}
+
+message EncryptedSum {
+  Payload payload = 1;
+}
+
+message Stats {
+  repeated EncryptedSum encrypted_sums = 1;
+}
+message StatsAck {}
+
+message ServiceResponse {
+  oneof Ack {
+    KeysAck keys_ack = 1;
+    FeatureAck feature_ack = 2;
+    InitAck init_ack = 3;
+  }
+}
+
+service PJC {
+  rpc KeyExchange(Init) returns (InitAck) {
+    option (google.api.http) = {post: "/v1/key_exchange"}; 
+  }
+  rpc RecvUCompanyKeys(ServiceResponse) returns (stream Payload) {
+    option (google.api.http) = {post: "/v1/recv_u_company_keys"}; 
+  }
+  rpc SendECompanyKeys(stream Payload) returns (ServiceResponse) {
+    option (google.api.http) = {post: "/v1/send_e_company_keys"}; 
+  }
+  rpc SendUPartnerKeys(stream Payload) returns (ServiceResponse) {
+    option (google.api.http) = {post: "/v1/send_u_partner_keys"}; 
+  }
+  rpc SendUPartnerFeature(stream Payload) returns (ServiceResponse) {
+    option (google.api.http) = {post: "/v1/send_u_partner_feature"}; 
+  }
+
+  rpc RecvStats(Commitment) returns (Stats) {
+    option (google.api.http) = {post: "/v1/recv_stats"}; 
+  }
+}
