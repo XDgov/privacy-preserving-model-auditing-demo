@@ -14,6 +14,7 @@ use num_traits::Signed;
 use rayon::iter::IndexedParallelIterator;
 use rayon::iter::IntoParallelIterator;
 use rayon::iter::ParallelIterator;
+use serde::{Deserialize, Serialize};
 
 use crate::gcd::mod_inverse;
 use crate::prelude::ByteBuffer;
@@ -23,7 +24,7 @@ struct MinimalEncryptionKey {
     pub n: BigUint,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EncryptionKey {
     pub n: BigUint,
     pub nn: BigUint,

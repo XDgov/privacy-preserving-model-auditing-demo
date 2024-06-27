@@ -38,10 +38,15 @@ http = "0.2"
 log = "0.4"
 num-bigint = { version = "0.4", features = ["rand"] }
 num-traits = "0.2"
+#pbjson = "0.4.0"
+#pbjson-types = "0.4.0"
 prost = "0.10"
 #rayon = "1.8.0"
 rcgen = "0.10.0"
 retry = "0.5.1"
+reqwest = { version = "0.11", features = ["json"] }
+serde = {version = "1.0.104", features = ["derive"] }
+serde_json = "1.0.118"
 tempfile = "3.2.0"
 tokio = { version = "1.18.2", features = ["rt-multi-thread", "time", "fs", "macros", "net"] }
 tokio-stream = { version =  "0.1.8", features = ["net"] }

@@ -6,6 +6,7 @@ use clap::Arg;
 use clap::ArgGroup;
 use common::timer;
 use tonic::Request;
+use tonic::transport::Body;
 mod rpc_client;
 use crypto::prelude::ByteBuffer;
 use crypto::prelude::TPayload;
@@ -14,12 +15,15 @@ use protocol::pjc::partner::PartnerPjc;
 use protocol::pjc::traits::*;
 use protocol::shared::LoadData;
 use protocol::shared::ShareableEncKey;
+use prost::Message;
+use reqwest; 
 use rpc::connect::create_client::create_client;
 use rpc::proto::common::Payload;
 use rpc::proto::gen_pjc::service_response::*;
 use rpc::proto::gen_pjc::Init;
 use rpc::proto::gen_pjc::ServiceResponse;
 use rpc::proto::RpcClient;
+use serde_json;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -102,7 +106,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input_path = matches.value_of("input").unwrap_or("input.csv");
     // let output_path = matches.value_of("output");
 
-    let mut client_context = {
+    /*let mut client_context = {
         let no_tls = matches.is_present("no-tls");
         let host_pre = matches.value_of("company");
         let tls_dir = matches.value_of("tls-dir");
@@ -124,23 +128,41 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             RpcClient::Pjc(x) => x,
             _ => panic!("wrong client"),
         }
-    };
+    };*/
 
     let partner_protocol = PartnerPjc::new();
 
+
+    let host_pre = matches.value_of("company");
     // 1. Load data
     // 2. Fill permutation pattern
     partner_protocol.load_data(input_path);
     partner_protocol.fill_permute_self();
 
     info!("Sending HE key to company");
+    let payload = Init{
+        public_key: Some(Payload::from(&partner_protocol.get_he_public_key()))
+    };
+    println!("{:?}", payload);
+    let body = tonic::transport::Body::from(payload.encode_to_vec());
+    let http_client = reqwest::Client::new();
+    let init_ack = http_client.post(
+        format!("{}/v1/key_exchange", &host_pre.unwrap())
+    ).body(body).send().await?;
+
+    /*.await?
+    .json()
+    .await?*/
+
+    //println!(init_ack);
+    info!("done!");
     // 3. Send public key for Homomorphic encryption to company
-    let req = Request::new(Init {
+    /*let req = Request::new(Init {
         public_key: Some(Payload::from(&partner_protocol.get_he_public_key())),
     });
-    let init_ack = client_context.key_exchange(req).await?.into_inner();
+    let init_ack = client_context.key_exchange(req).await?.into_inner();*/
 
-    info!("Receiving key from company");
+    /*info!("Receiving key from company");
     // 4. Receive encrypted keys from company
     let mut u_company_keys = TPayload::new();
     let _ = rpc_client::recv(
@@ -209,6 +231,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 10. Decrypt sums
     partner_protocol.decrypt_stats(encrypted_sums);
+    */
 
     global_timer.qps(
         "total time",

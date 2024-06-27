@@ -130,6 +130,8 @@ impl Pjc for PJCService {
             .build();
 
         let init = request.into_inner();
+        println!("{:?}", init);
+        println!("{:?}", init.public_key);
         let partner_he_public_key = TypeHeEncKey::from(
             &init
                 .public_key

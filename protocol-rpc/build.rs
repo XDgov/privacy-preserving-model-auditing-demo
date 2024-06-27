@@ -21,6 +21,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let out_dir = std::env::var_os(out_env).unwrap_or_else(|| panic!("env `{out_env}` is not set"));
 
     tonic_build::configure()
+        .type_attribute("common.Payload", "#[derive(serde::Serialize, serde::Deserialize)]")
+        .type_attribute("pjc.Init", "#[derive(serde::Serialize, serde::Deserialize)]")
         .out_dir(out_dir)
         .compile(
             proto_files,
