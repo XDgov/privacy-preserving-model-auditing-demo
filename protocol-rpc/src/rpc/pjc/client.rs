@@ -1,6 +1,7 @@
 //  Copyright (c) Facebook, Inc. and its affiliates.
 //  SPDX-License-Identifier: Apache-2.0
 
+use base64; 
 use clap::App;
 use clap::Arg;
 use clap::ArgGroup;
@@ -140,20 +141,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     partner_protocol.fill_permute_self();
 
     info!("Sending HE key to company");
+    let key = partner_protocol.get_he_public_key();
     let payload = Init{
         public_key: Some(Payload::from(&partner_protocol.get_he_public_key()))
     };
-    println!("{:?}", payload);
-    let body = tonic::transport::Body::from(payload.encode_to_vec());
+
+
+    let json_str = format!("{{'public_key': {{'payload': ['{}', '{}'] }}}}", base64::encode(key.n.to_bytes_le()), base64::encode(key.nn.to_bytes_le()));
+    let json_pl = serde_json::to_string(&payload).unwrap();
+    println!("{}", json_pl);
+    //println!("{:?}", payload);
+    //let body = tonic::transport::Body::from(json_str);
     let http_client = reqwest::Client::new();
     let init_ack = http_client.post(
         format!("{}/v1/key_exchange", &host_pre.unwrap())
-    ).body(body).send().await?;
+    ).json(&json_pl)
+    .send()
+    .await?;
 
-    /*.await?
-    .json()
-    .await?*/
-
+    println!("Response: {:?}", init_ack);
+    println!("Response: {}", init_ack.text().await?);
     //println!(init_ack);
     info!("done!");
     // 3. Send public key for Homomorphic encryption to company

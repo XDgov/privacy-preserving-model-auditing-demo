@@ -52,7 +52,10 @@ message ServiceResponse {
 
 service PJC {
   rpc KeyExchange(Init) returns (InitAck) {
-    option (google.api.http) = {post: "/v1/key_exchange"}; 
+    option (google.api.http) = {
+      post: "/v1/key_exchange"
+      body: "*"
+    }; 
   }
   rpc RecvUCompanyKeys(ServiceResponse) returns (stream Payload) {
     option (google.api.http) = {post: "/v1/recv_u_company_keys"}; 

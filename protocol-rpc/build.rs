@@ -21,6 +21,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let out_dir = std::env::var_os(out_env).unwrap_or_else(|| panic!("env `{out_env}` is not set"));
 
     tonic_build::configure()
+        //.type_attribute("common.Payload", "#[serde_with::serde_as]\n#[derive(serde::Serialize, serde::Deserialize)]")
+        //.field_attribute("common.Payload.payload", "#[serde_as(as = \"serde_with::base64::Base64\")]")
         .type_attribute("common.Payload", "#[derive(serde::Serialize, serde::Deserialize)]")
         .type_attribute("pjc.Init", "#[derive(serde::Serialize, serde::Deserialize)]")
         .out_dir(out_dir)
