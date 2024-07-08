@@ -146,12 +146,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         public_key: Some(Payload::from(&partner_protocol.get_he_public_key()))
     };
 
-
-    let json_str = format!("{{'public_key': {{'payload': ['{}', '{}'] }}}}", base64::encode(key.n.to_bytes_le()), base64::encode(key.nn.to_bytes_le()));
-    let json_pl = serde_json::to_string(&payload).unwrap();
-    println!("{}", json_pl);
-    //println!("{:?}", payload);
-    //let body = tonic::transport::Body::from(json_str);
+    let json_pl = serde_json::json!(&payload);
     let http_client = reqwest::Client::new();
     let init_ack = http_client.post(
         format!("{}/v1/key_exchange", &host_pre.unwrap())
