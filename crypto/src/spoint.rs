@@ -8,9 +8,12 @@ use std::fmt::Formatter;
 
 use serde::Deserialize;
 use serde::Serialize;
+use serde_with;
 
+#[serde_with::serde_as]
 #[derive(Hash, PartialEq, Eq, Clone, Debug, Serialize, Deserialize)]
 pub struct ByteBuffer {
+    #[serde_as(as = "serde_with::base64::Base64")]
     pub buffer: Vec<u8>,
 }
 

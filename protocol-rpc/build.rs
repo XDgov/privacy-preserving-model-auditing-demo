@@ -23,8 +23,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tonic_build::configure()
         .type_attribute("common.Payload", "#[serde_with::serde_as]\n#[derive(serde::Serialize, serde::Deserialize)]")
         .field_attribute("common.Payload.payload", "#[serde_as(as = \"Vec<serde_with::base64::Base64>\")]")
-        //.type_attribute("common.Payload", "#[derive(serde::Serialize, serde::Deserialize)]")
         .type_attribute("pjc.Init", "#[derive(serde::Serialize, serde::Deserialize)]")
+        .type_attribute("pjc.Commitment", "#[derive(serde::Serialize, serde::Deserialize)]")
+        .type_attribute("pjc.Stats", "#[derive(serde::Serialize, serde::Deserialize)]")
+        .field_attribute("pjc.Stats.encrypted_sums", "#[serde(alias = \"encryptedSums\")]")
+        .type_attribute("pjc.EncryptedSum", "#[derive(serde::Serialize, serde::Deserialize)]")
         .out_dir(out_dir)
         .compile(
             proto_files,

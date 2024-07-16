@@ -23,8 +23,21 @@ use rpc::proto::common::Payload;
 use rpc::proto::gen_pjc::service_response::*;
 use rpc::proto::gen_pjc::Init;
 use rpc::proto::gen_pjc::ServiceResponse;
+use rpc::proto::gen_pjc::Stats;
 use rpc::proto::RpcClient;
 use serde_json;
+use serde::{Serialize, Deserialize};
+use std::fmt::Debug;
+
+#[derive(Serialize, Deserialize, Debug)]
+struct KeyResponse {
+    result: Payload,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct KeyPayload{
+    payload: TPayload,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -140,6 +153,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     partner_protocol.load_data(input_path);
     partner_protocol.fill_permute_self();
 
+    // 3. Send public key for Homomorphic encryption to company
     info!("Sending HE key to company");
     let key = partner_protocol.get_he_public_key();
     let payload = Init{
@@ -154,52 +168,48 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .send()
     .await?;
 
-    println!("Response: {:?}", init_ack);
-    println!("Response: {}", init_ack.text().await?);
-    //println!(init_ack);
-    info!("done!");
-    // 3. Send public key for Homomorphic encryption to company
-    /*let req = Request::new(Init {
-        public_key: Some(Payload::from(&partner_protocol.get_he_public_key())),
-    });
-    let init_ack = client_context.key_exchange(req).await?.into_inner();*/
-
-    /*info!("Receiving key from company");
+    info!("Receiving key from company");
     // 4. Receive encrypted keys from company
-    let mut u_company_keys = TPayload::new();
-    let _ = rpc_client::recv(
-        ServiceResponse {
-            ack: Some(Ack::InitAck(init_ack.clone())),
-        },
-        "u_company_keys".to_string(),
-        &mut u_company_keys,
-        &mut client_context,
-    )
-    .await?;
+
+    let resp = http_client.post(
+        format!("{}/v1/recv_u_company_keys", &host_pre.unwrap())
+    ).send().await?.json::<KeyResponse>().await?;
+
+    let byte_array : Vec<ByteBuffer> = resp.result.payload.iter().map(|e| ByteBuffer{buffer: e.to_vec()}).collect();
+
+    let mut u_company_keys = TPayload::from(byte_array);
+
+    println!("{:?}", u_company_keys);
+
 
     info!("encrypting and permuting");
     // 5. Encrypt company's keys with own keys and permute
     let e_company_keys = partner_protocol.encrypt_permute(u_company_keys);
 
-    // 6. Encrypt company's keys with own keys and permute
-    let _ = rpc_client::send(
+    let resp = rpc_client::send_rest_api(
         e_company_keys,
         "e_company_keys".to_string(),
-        &mut client_context,
-    )
-    .await?
-    .into_inner();
+        &http_client,
+        host_pre.unwrap().to_string()
+    ).await;
+    
+    println!("{:?}", resp);
+
 
     // 7. Send partner's permuted and encrypted keys to company to calculate
     //    intersection
+
     let u_partner_keys = partner_protocol.get_permuted_keys();
-    let _ = rpc_client::send(
+
+    let resp = rpc_client::send_rest_api(
         u_partner_keys,
         "u_partner_keys".to_string(),
-        &mut client_context,
-    )
-    .await?
-    .into_inner();
+        &http_client,
+        host_pre.unwrap().to_string()
+    ).await;
+
+    println!("{:?}", resp);
+
 
     // 8. Send partner's permuted and encrypted features to company to calculate
     //    encrypted sum for each feature. This sums values that correspond to keys
@@ -209,19 +219,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         feature.push(ByteBuffer {
             buffer: (feature_index as u64).to_le_bytes().to_vec(),
         });
-        let _ = rpc_client::send(
+
+        let resp = rpc_client::send_rest_api(
             feature,
             "u_partner_feature".to_string(),
-            &mut client_context,
-        )
-        .await?
-        .into_inner();
+            &http_client,
+            host_pre.unwrap().to_string()
+        ).await;
+    
+        println!("{:?}", resp);
     }
 
     // 9. Receive sums of each feature
-    let proto_stats = rpc_client::recv_stats(&mut client_context)
-        .await?
-        .into_inner();
+    let proto_stats = http_client.post(
+        format!("{}/v1/recv_stats", &host_pre.unwrap())
+    ).send().await?.json::<Stats>().await?;
 
     let encrypted_sums = proto_stats
         .encrypted_sums
@@ -233,7 +245,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 10. Decrypt sums
     partner_protocol.decrypt_stats(encrypted_sums);
-    */
 
     global_timer.qps(
         "total time",
