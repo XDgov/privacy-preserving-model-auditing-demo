@@ -4,7 +4,7 @@ import (
   "context"
   "flag"
   "net/http"
-
+  "fmt"
   "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
   "google.golang.org/grpc"
   "google.golang.org/grpc/credentials/insecure"
@@ -16,7 +16,7 @@ import (
 var (
   // command-line options:
   // gRPC server endpoint
-  grpcServerEndpoint = flag.String("grpc-server-endpoint",  "localhost:10011", "gRPC server endpoint")
+  grpcServerEndpoint = flag.String("grpc-server-endpoint",  "test-lazovich-binary-pjc.apps.internal:8080", "gRPC server endpoint")
 )
 
 func run() error {
@@ -40,7 +40,9 @@ func run() error {
 func main() {
   flag.Parse()
 
+  fmt.Print("Starting proxy server!")
   if err := run(); err != nil {
+    fmt.Print("Welcome to errorland, population you!")
     grpclog.Fatal(err)
   }
 }

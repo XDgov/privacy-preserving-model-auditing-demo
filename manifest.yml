@@ -9,3 +9,7 @@ applications:
     cc:
       packages:
         max_package_size 4G
+  #routes:
+  #  - route: test-lazovich-binary-pjc.apps.internal:10011
+  #    protocol: http2
+
