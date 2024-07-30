@@ -1,1 +1,0 @@
-Enc(pk_mpc, SUMID1)
