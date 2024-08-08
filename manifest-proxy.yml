@@ -1,0 +1,7 @@
+---
+applications:
+- name: test-pjc-proxy
+  memory: 0.5G
+  disk_quota: 2G 
+  buildpacks:
+  - https://github.com/cloudfoundry/binary-buildpack.git
