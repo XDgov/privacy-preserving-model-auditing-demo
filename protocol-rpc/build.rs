@@ -17,6 +17,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .type_attribute("pjc.Commitment", "#[derive(serde::Serialize, serde::Deserialize)]")
         .type_attribute("pjc.Stats", "#[derive(serde::Serialize, serde::Deserialize)]")
         .field_attribute("pjc.Stats.encrypted_sums", "#[serde(alias = \"encryptedSums\")]")
+        .field_attribute("pjc.Stats.intersection_size", "#[serde(alias = \"intersectionSize\")]")
         .type_attribute("pjc.EncryptedSum", "#[derive(serde::Serialize, serde::Deserialize)]")
         .out_dir(out_dir)
         .compile(

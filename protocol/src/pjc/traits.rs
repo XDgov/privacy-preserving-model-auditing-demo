@@ -14,6 +14,7 @@ pub trait PartnerPJCProtocol {
 pub trait CompanyPJCProtocol {
     fn get_keys(&self) -> TPayload;
     fn get_stats(&self) -> Vec<TPayload>;
+    fn get_intersection_size(&self) -> i32;
 
     fn set_encrypted_company_keys(&self, data: TPayload);
 

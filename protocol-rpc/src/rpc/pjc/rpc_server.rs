@@ -165,8 +165,12 @@ impl Pjc for PJCService {
             self.killswitch.store(true, Ordering::SeqCst);
         }
 
+        let intersection_size = self.protocol.get_intersection_size();
+
+        info!("Intersection size from recv_stats: {}", intersection_size);
         Ok(Response::new(Stats {
             encrypted_sums: enc_sums,
+            intersection_size: intersection_size,
         }))
     }
 }

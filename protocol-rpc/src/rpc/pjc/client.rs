@@ -118,31 +118,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let global_timer = timer::Timer::new_silent("global");
     let input_path = matches.value_of("input").unwrap_or("input.csv");
-    // let output_path = matches.value_of("output");
-
-    /*let mut client_context = {
-        let no_tls = matches.is_present("no-tls");
-        let host_pre = matches.value_of("company");
-        let tls_dir = matches.value_of("tls-dir");
-        let tls_key = matches.value_of("tls-key");
-        let tls_cert = matches.value_of("tls-cert");
-        let tls_ca = matches.value_of("tls-ca");
-        let tls_domain = matches.value_of("tls-domain");
-
-        match create_client(
-            no_tls,
-            host_pre,
-            tls_dir,
-            tls_key,
-            tls_cert,
-            tls_ca,
-            tls_domain,
-            "pjc".to_string(),
-        ) {
-            RpcClient::Pjc(x) => x,
-            _ => panic!("wrong client"),
-        }
-    };*/
 
     let partner_protocol = PartnerPjc::new();
 
@@ -179,9 +154,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut u_company_keys = TPayload::from(byte_array);
 
-    println!("{:?}", u_company_keys);
-
-
     info!("encrypting and permuting");
     // 5. Encrypt company's keys with own keys and permute
     let e_company_keys = partner_protocol.encrypt_permute(u_company_keys);
@@ -192,8 +164,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         &http_client,
         host_pre.unwrap().to_string()
     ).await;
-    
-    println!("{:?}", resp);
 
 
     // 7. Send partner's permuted and encrypted keys to company to calculate
@@ -207,8 +177,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         &http_client,
         host_pre.unwrap().to_string()
     ).await;
-
-    println!("{:?}", resp);
 
 
     // 8. Send partner's permuted and encrypted features to company to calculate
@@ -226,8 +194,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             &http_client,
             host_pre.unwrap().to_string()
         ).await;
-    
-        println!("{:?}", resp);
     }
 
     // 9. Receive sums of each feature
@@ -241,10 +207,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map(|result| TPayload::from(&result.payload.unwrap()))
         .collect::<Vec<TPayload>>();
 
-    println!("vector length {}", encrypted_sums.len());
-
+    let intersection_size = proto_stats.intersection_size; 
     // 10. Decrypt sums
     partner_protocol.decrypt_stats(encrypted_sums);
+
+    info!("Intersection size: {}", intersection_size);
 
     global_timer.qps(
         "total time",

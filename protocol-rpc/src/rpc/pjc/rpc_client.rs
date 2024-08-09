@@ -75,8 +75,6 @@ pub async fn send_rest_api(
 
     let json_pl = serde_json::json!(pl);
 
-    println!("{:?}", json_pl);
-
     http_client.post(http_url).json(&json_pl).send().await
 }
 

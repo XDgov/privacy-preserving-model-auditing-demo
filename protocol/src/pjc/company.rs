@@ -37,6 +37,7 @@ pub struct CompanyPjc {
     encrypted_company_keys: Arc<RwLock<TPayload>>,
     partner_intersection_mask: Arc<RwLock<Vec<bool>>>,
     encrypted_stats: Arc<RwLock<Vec<TPayload>>>,
+    intersection_size: Arc<RwLock<i32>>,
 }
 
 impl CompanyPjc {
@@ -55,6 +56,7 @@ impl CompanyPjc {
             encrypted_company_keys: Arc::new(RwLock::default()),
             partner_intersection_mask: Arc::new(RwLock::default()),
             encrypted_stats: Arc::new(RwLock::default()),
+            intersection_size: Arc::new(RwLock::default()),
         }
     }
 
@@ -121,9 +123,10 @@ impl CompanyPJCProtocol for CompanyPjc {
         );
 
         // find the index of the intersection
-        if let (Ok(company_keys), Ok(mut partner_mask)) = (
+        if let (Ok(company_keys), Ok(mut partner_mask), Ok(mut intersection_size)) = (
             self.encrypted_company_keys.clone().read(),
             self.partner_intersection_mask.clone().write(),
+            self.intersection_size.clone().write(),
         ) {
             //it's important to have partner keys first
             let mut mask = common::vectors::vec_intersection_mask(
@@ -131,14 +134,15 @@ impl CompanyPJCProtocol for CompanyPjc {
                 company_keys.as_slice(),
             );
 
+            *intersection_size = mask.iter().fold(0, |a, &b| a + b as i32);
             info!(
                 "e-partner Intersection size: {}",
-                mask.iter().fold(0, |a, &b| a + b as i32)
+                intersection_size
             );
             partner_mask.clear();
             partner_mask.extend(mask.drain(..));
         } else {
-            panic!("Unable to find interesection");
+            panic!("Unable to find intersection");
         }
     }
 
@@ -174,6 +178,14 @@ impl CompanyPJCProtocol for CompanyPjc {
             stats.clone()
         } else {
             panic!("Cannot get company stats")
+        }
+    }
+
+    fn get_intersection_size(&self) -> i32 {
+        if let Ok(sz) = self.intersection_size.clone().read() {
+            sz.clone()
+        } else {
+            panic! ("Cannot get intersection size")
         }
     }
 }

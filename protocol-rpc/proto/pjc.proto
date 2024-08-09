@@ -32,6 +32,7 @@ message EncryptedSum {
 
 message Stats {
   repeated EncryptedSum encrypted_sums = 1;
+  int32 intersection_size = 2; 
 }
 message StatsAck {}
 
