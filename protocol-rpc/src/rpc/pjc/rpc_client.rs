@@ -18,6 +18,9 @@ use tonic::transport::Channel;
 use tonic::Request;
 use tonic::Response;
 use tonic::Status;
+use rpc::proto::common::Payload;
+use reqwest;
+use serde_json;
 
 pub async fn recv(
     response: ServiceResponse,
@@ -51,6 +54,28 @@ pub async fn send(
         "u_partner_feature" => rpc.send_u_partner_feature(send_data(data)).await,
         _ => panic!("wrong data type"),
     }
+}
+
+pub async fn send_rest_api(
+    data: TPayload,
+    name: String,
+    http_client: &reqwest::Client,
+    host_pre: String,
+) -> Result<reqwest::Response, reqwest::Error> {
+    let http_url = match name.as_str() {
+        "e_company_keys" => format!("{}/v1/send_e_company_keys", &host_pre),
+        "u_partner_keys" => format!("{}/v1/send_u_partner_keys", &host_pre),
+        "u_partner_feature" => format!("{}/v1/send_u_partner_feature", &host_pre),
+        _ => panic!("wrong api call"),
+    };
+
+    let vec = data.iter().map(|x| x.buffer.clone()).collect::<Vec<Vec<u8>>>();
+
+    let pl = Payload{payload: vec};
+
+    let json_pl = serde_json::json!(pl);
+
+    http_client.post(http_url).json(&json_pl).send().await
 }
 
 pub async fn recv_stats(rpc: &mut PjcClient<Channel>) -> Result<Response<Stats>, Status> {

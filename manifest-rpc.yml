@@ -1,0 +1,8 @@
+---
+applications:
+- name: test-pjc-server
+  memory: 0.1G
+  disk_quota: 0.1G 
+  buildpacks:
+  - https://github.com/cloudfoundry/binary-buildpack.git
+

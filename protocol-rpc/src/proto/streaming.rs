@@ -15,11 +15,12 @@ use tonic::Streaming;
 use crate::proto::common::Payload;
 
 fn chunks_count<T>(data: &[T]) -> usize {
-    cmp::max(32_usize, data.len() / 2000_usize)
+    cmp::max(20000_usize, data.len() / 2000_usize)
 }
 
 pub fn send_data(data: TPayload) -> Request<impl Stream<Item = Payload>> {
     let chunk_count = chunks_count(data.as_ref());
+
     let s = stream! {
         for chunk in data.chunks(chunk_count).into_iter() {
             let pl = chunk.iter().map(|x| x.buffer.clone()).collect::<Vec<Vec<u8>>>();

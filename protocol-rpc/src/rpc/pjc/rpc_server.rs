@@ -130,6 +130,9 @@ impl Pjc for PJCService {
             .build();
 
         let init = request.into_inner();
+        info!("Inside key_exchange");
+        info!("{:?}", init);
+        info!("{:?}", init.public_key);
         let partner_he_public_key = TypeHeEncKey::from(
             &init
                 .public_key
@@ -162,8 +165,12 @@ impl Pjc for PJCService {
             self.killswitch.store(true, Ordering::SeqCst);
         }
 
+        let intersection_size = self.protocol.get_intersection_size();
+
+        info!("Intersection size from recv_stats: {}", intersection_size);
         Ok(Response::new(Stats {
             encrypted_sums: enc_sums,
+            intersection_size: intersection_size,
         }))
     }
 }
