@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 PUSH_DIR=push_dir_proxy
 
