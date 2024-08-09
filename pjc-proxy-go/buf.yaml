@@ -1,0 +1,4 @@
+version: v1
+name: buf.build/lazovich/pjc-proxy
+deps:
+  - buf.build/googleapis/googleapis

@@ -8,15 +8,17 @@ authors = ["Facebook Inc"]
 edition = "2021"
 
 [dependencies]
+base64 = "0.22.1"
 Cupcake = { git = "https://github.com/facebookresearch/Cupcake"}
 curve25519-dalek = { version = "4.1.1", features = ["digest", "rand_core"]}
-num-bigint = { version = "0.4", features = ["rand"] }
+num-bigint = { version = "0.4", features = ["rand", "serde"] }
 num-integer = "0.1"
 num-traits = "0.2"
 rand = "0.8"
 rand_core = "0.6"
 rayon = "1.8.0"
 serde = {version = "1.0.104", features = ["derive"] }
+serde_with = {version = "3.8.1", features = ["base64"] }
 sha2 = "0.10.6"
 
 [dev-dependencies]
